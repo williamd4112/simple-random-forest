@@ -88,8 +88,8 @@ def main(args):
             logging.info ('Testing Accuracy = %f' % acc)
             print (acc)
         acc = model.eval(X_Test_phi, T_Test)
-        logging.info ('Ensemble testing Accuracy = %f' % acc)
-        print (acc)
+        print ('Ensemble acc %f' % model.eval(X_Test_phi, T_Test))
+        print ('Min %f, Mean %f, Max %f, Variance %f' % (np.min(acc_all), np.mean(acc_all), np.max(acc_all), np.var(acc_all)))
     elif args.task == 'plot':
         model.load(args.load)
         logging.info('Model loaded from %s' % args.load)
