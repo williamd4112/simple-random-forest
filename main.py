@@ -74,13 +74,28 @@ def main(args):
 
             phi.save('%s' % args.save + '_phi')
             logging.info('Model preprocessor saved at %s' % args.save + '_phi')
+    elif args.task == 'eval':
+        model.load(args.load)
+        phi = Preprocessor()
+        phi.load(args.load + '_phi')
 
+        X_Test = load_csv(args.test_X)
+        T_Test = load_csv(args.test_T).flatten()
+        X_Test_phi = phi.transform(X_Test)
+        
+        acc_all = model.eval_ensemble(X_Test_phi, T_Test)
+        for acc in acc_all:
+            logging.info ('Testing Accuracy = %f' % acc)
+            print (acc)
+        acc = model.eval(X_Test_phi, T_Test)
+        logging.info ('Ensemble testing Accuracy = %f' % acc)
+        print (acc)
     elif args.task == 'plot':
         model.load(args.load)
         logging.info('Model loaded from %s' % args.load)
         logging.info('Plotting')
 
-        plot_decision_tree(model)
+        plot_decision_tree(model.get_models(), args.plot)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -91,10 +106,11 @@ if __name__ == '__main__':
 
     parser.add_argument('--load', help='model load from', type=str)
     parser.add_argument('--save', help='model save to', type=str)
+    parser.add_argument('--plot', help='plot save to', type=str)
 
     parser.add_argument('--pre', help='preprocess type', type=str, choices=['pca', 'lda'], default='pca')
     parser.add_argument('--deg', help='degree for preprocess', type=int, default=10)
-    parser.add_argument('--task', help='task type', type=str, choices=['validate', 'train', 'plot'], default='validate')
+    parser.add_argument('--task', help='task type', type=str, choices=['eval', 'train', 'plot'], default='validate')
     parser.add_argument('--model', help='model type', type=str, choices=['rf'], default='rf')
 
     parser.add_argument('--param_rf', help='parameter for rf', type=str, default='100,1000,0.5')

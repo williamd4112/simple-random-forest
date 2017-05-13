@@ -1,6 +1,7 @@
 DEG=10
 PRE="pca"
 PARAM=""
+SAVE="model"
 
 for n_tree in $1
 do
@@ -8,7 +9,7 @@ do
     do
         for frac in $3
         do
-            acc=$(python main.py --task train --deg $DEG --pre $PRE --param_rf $n_tree,$min_num,$frac)
+            acc=$(python main.py --task train --save $SAVE --deg $DEG --pre $PRE --param_rf $n_tree,$min_num,$frac)
             echo $n_tree,$min_num,$frac,$acc
         done
     done

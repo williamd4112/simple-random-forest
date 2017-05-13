@@ -23,14 +23,20 @@ class Model(object):
         t = T.astype(np.int32)
         return float(np.equal(y, t).sum()) / len(t)
 
-class RandomForest(Model):
+class EnsembleModel(Model):
+    def get_models(self):
+        return self.model.estimators_
+
+    def eval_ensemble(self, X, T):
+        return [ estimator.score(X, T) for estimator in self.model.estimators_ ]
+       
+class RandomForest(EnsembleModel):
     def train(self, X, T, param):
         logging.info('X = [%d, %d], T = [1]' % (X.shape[0], X.shape[1]))
-        for c in range(int(np.min(T)), int(np.max(T) + 1)):
-            logging.info('#Class %d = %d' % (c, (T == c).sum()))
         self.model = BaggingClassifier(base_estimator=DecisionTreeClassifier(min_samples_leaf=int(param[1])),
                                         n_estimators=int(param[0]),
                                         max_samples=float(param[2]),
                                         bootstrap=True)
         self.model.fit(X, T)
 
+                
