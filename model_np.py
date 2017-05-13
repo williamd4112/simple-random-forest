@@ -3,8 +3,8 @@ import numpy as np
 
 from sklearn.model_selection import cross_val_score
 from sklearn import datasets, svm
-
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier
 
 import cPickle as pickle
 
@@ -26,24 +26,11 @@ class Model(object):
 class RandomForest(Model):
     def train(self, X, T, param):
         logging.info('X = [%d, %d], T = [1]' % (X.shape[0], X.shape[1]))
-        n_train = int(float(len(X) * param[2]))
-        self.model = RandomForestClassifier(n_estimators=int(param[0]), min_samples_leaf=int(param[1]))
-        self.model.fit(X[:n_train], T[:n_train])
-    
-    def validate(self, X, T, params):
-        logging.info('X = [%d, %d], T = [1]' % (X.shape[0], X.shape[1]))
-        
-        stat = []
-        
-        for param_ in params:
-            param = [ float(p) for p in param_.split(',') ]
+        for c in range(int(np.min(T)), int(np.max(T) + 1)):
+            logging.info('#Class %d = %d' % (c, (T == c).sum()))
+        self.model = BaggingClassifier(base_estimator=DecisionTreeClassifier(min_samples_leaf=int(param[1])),
+                                        n_estimators=int(param[0]),
+                                        max_samples=float(param[2]),
+                                        bootstrap=True)
+        self.model.fit(X, T)
 
-            n_train = int(float(len(X) * param[2]))
-            logging.info('[%d, %d, %f], n_train = %d' % (param[0], param[1], param[2], n_train))
-          
-            model = RandomForestClassifier(n_estimators=int(param[0]), min_samples_leaf=int(param[1]))
-            scores = (cross_val_score(model, X[:n_train], T[:n_train], cv=3, n_jobs=1))
-            score = np.mean(scores)
-
-            logging.info('Validation accuracy = %f' % score) 
-            stat.append((param[0], param[1], param[2], score))           

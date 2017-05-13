@@ -42,20 +42,19 @@ def preprocess(args, X, T):
 
 def main(args):
     model = get_model(args)
-    if args.task == 'validate':
+    if args.task == 'train':
+        param = get_param(args)
+
         X_Train = load_csv(args.train_X)
         T_Train = load_csv(args.train_T).flatten()
         X_Train_phi, phi = preprocess(args, X_Train, T_Train)
-    
+
+        inds = range(len(X_Train_phi))
+        X_Train_phi = X_Train_phi[inds]
+        T_Train = T_Train[inds]
+
         logging.info('Training')
-        model.validate(X_Train_phi, T_Train, params=get_param_validate(args))
-    elif args.task == 'train':
-        X_Train = load_csv(args.train_X)
-        T_Train = load_csv(args.train_T).flatten()
-        X_Train_phi, phi = preprocess(args, X_Train, T_Train)
-    
-        logging.info('Training')
-        model.train(X_Train_phi, T_Train, param=get_param(args))
+        model.train(X_Train_phi, T_Train, param=param)
 
         train_acc = model.eval(X_Train_phi, T_Train)
         logging.info('Training Accuracy = %f' % train_acc)
@@ -81,7 +80,6 @@ def main(args):
         logging.info('Model loaded from %s' % args.load)
         logging.info('Plotting')
 
-        # TODO: Plot
         plot_decision_tree(model)
 
 if __name__ == '__main__':
